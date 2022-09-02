@@ -1,6 +1,6 @@
 var options = {
     valueNames: [ 'name', 'number' ],
-    item: '<li><h3 class="name"></h3><p class="number"></p></li>'
+    item: '<li><span class="number"></span><span class="name"></span></li>'
   };
   
   var values = [];

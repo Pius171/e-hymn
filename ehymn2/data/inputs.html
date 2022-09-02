@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>E-hymn</title>
+  <!-- <link rel="stylesheet" href="style.css"> -->
+  <link rel="icon" href="./favicon.ico" type="image/x-icon">
+  <style>
+
+    /* animations */
+    body{
+    padding:0px;
+    margin: 0px;
+    background-color: #ff330a;
+    /* #6D214F; */
+    width:100%;
+    height:100vh;
+    display: flex;
+    justify-content: center;
+}
+.wrapper{
+    position: absolute;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+    width: fit-content;
+    height:auto;
+}
+button{
+    width:220px;
+    height:80px;
+    background: linear-gradient(to left top, #ff775c 50%, #ff5533 50%);
+    border-style: none;
+    color:#fff;
+    font-size: 23px;
+    letter-spacing: 3px;
+    font-family: 'Lato';
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    padding: 0px;
+    margin: 10px;
+    overflow: hidden;
+    transition: all .5s;
+    box-shadow: 0px 1px 2px rgba(0,0,0,.2);
+}
+button span{
+    position: absolute;
+    display: block;
+}
+button span:nth-child(1){
+    height: 3px;
+    width:200px;
+    top:0px;
+    left:-200px;
+    background: linear-gradient(to right, rgba(0,0,0,0), #f6e58d);
+    border-top-right-radius: 1px;
+    border-bottom-right-radius: 1px;
+    animation: span1 2s linear infinite;
+    animation-delay: 1s;
+}
+
+@keyframes span1{
+    0%{
+        left:-200px
+    }
+    100%{
+        left:200px;
+    }
+}
+button span:nth-child(2){
+    height: 70px;
+    width: 3px;
+    top:-70px;
+    right:0px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0), #f6e58d);
+    border-bottom-left-radius: 1px;
+    border-bottom-right-radius: 1px;
+    animation: span2 2s linear infinite;
+    animation-delay: 2s;
+}
+@keyframes span2{
+    0%{
+        top:-70px;
+    }
+    100%{
+        top:70px;
+    }
+}
+button span:nth-child(3){
+    height:3px;
+    width:200px;
+    right:-200px;
+    bottom: 0px;
+    background: linear-gradient(to left, rgba(0,0,0,0), #f6e58d);
+    border-top-left-radius: 1px;
+    border-bottom-left-radius: 1px;
+    animation: span3 2s linear infinite;
+    animation-delay: 3s;
+}
+@keyframes span3{
+    0%{
+        right:-200px;
+    }
+    100%{
+        right: 200px;
+    }
+}
+
+button span:nth-child(4){
+    height:70px;
+    width:3px;
+    bottom:-70px;
+    left:0px;
+    background: linear-gradient(to top, rgba(0,0,0,0), #f6e58d);
+    border-top-right-radius: 1px;
+    border-top-left-radius: 1px;
+    animation: span4 2s linear infinite;
+    animation-delay: 4s;
+}
+@keyframes span4{
+    0%{
+        bottom: -70px;
+    }
+    100%{
+        bottom:70px;
+    }
+}
+
+button:hover{
+    transition: all .5s;
+    transform: rotate(-3deg) scale(1.1);
+    box-shadow: 0px 3px 5px rgba(0,0,0,.4);
+}
+button:hover span{
+    animation-play-state: paused;
+}
+/*                          end of animations                          */
+
+/*                          my css                                     */
+.hymns-button, .specials, .play-pause{
+   margin-top: 50px;
+}
+section, .specials-container, .play-pause-container{
+    display: flex;
+    justify-content: center;
+}
+
+main{
+    padding: 50px;
+    background-color: white;
+ 
+}
+
+/* Dropdown Button */
+.dropbtn {
+  background-color: #04AA6D;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #ddd;}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {display: block;}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {background-color: #3e8e41;}
+  </style>
+
+  </head>
+
+
+
+<body>
+<main>
+    <section>
+        <div class="hymns-button">
+            
+<button onclick="PlayHymn('entrance')">Play entrance hymn
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+<button onclick="PlayHymn('offertory')">Play offertory hymn
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+<button onclick="PlayHymn('communion')">Play communion hymn
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+<button onclick="PlayHymn('closing')">Play  closing hymn
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+</div>
+
+    </section>
+
+<div class="specials-container">
+    <div class="specials">
+        <div class="dropdown">
+            <button class="dropbtn">Our Father</button>
+            <div class="dropdown-content">
+              <button onclick="PlayHymn('our father english')">English</button>
+              <button onclick="PlayHymn('our father latin')">Latin</button>
+            
+            </div>
+          </div>
+
+          <div class="dropdown">
+            <button class="dropbtn">The creed</button>
+            <div class="dropdown-content">
+                <!-- Change the button style so it is different from the main dropdown -->
+              <button onclick="PlayHymn('creed english')">English</button> 
+              <button onclick="PlayHymn('creed latin')">Latin</button>
+            </div>
+
+          </div>
+
+          <div class="dropdown">
+            <button class="dropbtn">Gloria</button>
+            <div class="dropdown-content">
+              <button onclick="PlayHymn('gloria english')">English</button>
+              <button onclick="PlayHymn('gloria latin')">Latin</button>
+            </div>
+          </div>
+        
+        </div>
+</div>
+<div class="play-pause-container">
+    <div class="play-pause">
+        <button onclick="PlayHymn('play-pause')">Play/Pause</button>
+    </div>
+</div>
+</main>
+
+<script>
+    var xhttp = new XMLHttpRequest();
+function PlayHymn(hymn){
+xhttp.open("POST","input", true);
+xhttp.setRequestHeader("Content-type", "text/plain");
+xhttp.send(hymn);
+console.log("request successful");
+}
+
+
+
+</script>
+</body>
+</html>

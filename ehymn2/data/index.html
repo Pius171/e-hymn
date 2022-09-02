@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>My Website</title>
+  <title>E-hymn</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="./favicon.ico" type="image/x-icon">
   <style>
@@ -12,26 +12,40 @@
   </style>
 </head>
 <body>
-<h1>Pius Electronics E-hymn</h1>
+  <main>
+    <section> 
+      <header>
+        <img src="pius.png">
+<h1>E-hymn</h1>
+
+</header>
+<div class="spacer"></div> 
+
+      <div id="users">
+        <input class="search"  placeholder="Search for hymns here"  />
+       
+        <ul class="list inactive"></ul>
+      </div>
+      <div class="spacer"></div>
   <form action="/hymns">
+    <div class="form-inputs">
+    <input name="entrance" placeholder="entrance hymn number" />
     
-    <input name="entrance" placeholder="entrance hymn number" /><br>
-    <input name="offertory" placeholder="offertory hymn number" /><br>
-    <input name="communion" placeholder="communion hymn number" /><br>
-    <input name="closing" placeholder="closing hymn number" /><br><br>
+    <input name="offertory" placeholder="offertory hymn number" />
+   
+    <input name="communion" placeholder="communion hymn number" />
+   
+    <input name="closing" placeholder="closing hymn number" />
+    
+  </div>
     <button type="submit" >Submit</button>
   
   </form>
   <br>
-  <main>
-      <h2>Search for hymns here</h2>  
-
-      <div id="users">
-        <input class="search"  placeholder="Search"  />
+ 
       
-        <ul class="list inactive"></ul>
       
-      </div>
+    </section>
   </main>
 <script src="list.min.js"></script>
   <script  src="index.js"></script>
