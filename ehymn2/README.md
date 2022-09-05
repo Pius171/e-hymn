@@ -27,10 +27,11 @@ make it something I can easily expand beyond pau
 domain name
 //check if printing to serial will affect mp3 player
 // use normal webserver
-//put the webserver code in a separate file
+//put the webserver  and mp3 code in a separate file
 // add ota
 // two webpages input and controls
-//create button for specific hymns
+//create buttons for specific hymns
+// return something after submit page has been pressed
 
 do later
 create a list with all they hymns and cateroized them and add a button to preview the song the song

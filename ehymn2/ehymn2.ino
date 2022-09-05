@@ -36,6 +36,7 @@
 // password change tomorro with input
 //volume control
 // convert image to icon file
+// dfmp3.loop();
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
@@ -43,15 +44,55 @@
 #include <FS.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
+#include <DFMiniMp3.h>
 
 
 DynamicJsonDocument hymns(200);
 JsonObject obj = hymns.as<JsonObject>();
+// forward declare the notify class, just the name
+// I am not using the notify class, but it part of the DFMiniMp3 template
+class Mp3Notify;
+typedef DFMiniMp3<HardwareSerial, Mp3Notify> DfMp3;
 
-#ifndef APSSID
-#define APSSID "E-hymn"
-#define APPSK "thereisnospoon"
-#endif
+// instance a DfMp3 object,
+//
+DfMp3 dfmp3(Serial1);
+
+class Mp3Notify {
+public:
+  static void PrintlnSourceAction(DfMp3_PlaySources source, const char* action) {
+    if (source & DfMp3_PlaySources_Sd) {
+      Serial.print("SD Card, ");
+    }
+    if (source & DfMp3_PlaySources_Usb) {
+      Serial.print("USB Disk, ");
+    }
+    if (source & DfMp3_PlaySources_Flash) {
+      Serial.print("Flash, ");
+    }
+    Serial.println(action);
+  }
+  static void OnError([[maybe_unused]] DfMp3& mp3, uint16_t errorCode) {
+    // see DfMp3_Error for code meaning
+    Serial.println();
+    Serial.print("Com Error ");
+    Serial.println(errorCode);
+  }
+  static void OnPlayFinished([[maybe_unused]] DfMp3& mp3, [[maybe_unused]] DfMp3_PlaySources source, uint16_t track) {
+    Serial.print("Play finished for #");
+    Serial.println(track);
+  }
+  static void OnPlaySourceOnline([[maybe_unused]] DfMp3& mp3, DfMp3_PlaySources source) {
+    PrintlnSourceAction(source, "online");
+  }
+  static void OnPlaySourceInserted([[maybe_unused]] DfMp3& mp3, DfMp3_PlaySources source) {
+    PrintlnSourceAction(source, "inserted");
+  }
+  static void OnPlaySourceRemoved([[maybe_unused]] DfMp3& mp3, DfMp3_PlaySources source) {
+    PrintlnSourceAction(source, "removed");
+  }
+};
+
 
 #define DEBUG 1
 
@@ -64,138 +105,128 @@ JsonObject obj = hymns.as<JsonObject>();
 #define debugln(x)
 #endif
 
-/* Set these to your desired hymn_numbers. */
-const char *ssid = APSSID;
-const char *password = APPSK;
+
+String ssid = "E-hymn";
+String password = "";
 
 const byte DNS_PORT = 53;
-IPAddress apIP(192, 168, 1, 1);
+IPAddress apIP(192, 168, 1, 1);  // make this random
 DNSServer dnsServer;
 ESP8266WebServer server(80);
+const int BUSY_PIN = 5;
 
 
 
+void server_handles() {
 
-void send_html() {
-  File file1 = LittleFS.open("/index.html", "r");
-  if (!file1) {
-    debugln("Failed to open file1 for reading");
+  server.on("/get_pass", []() {
+    char buffer[100];
+    sprintf(buffer, "{\"ssid\": \"%s\",\"pass\": \"%s\"}", ssid.c_str(), password.c_str());
+    server.send(200, "text/plain", buffer);
+  });
 
-  } else {
-    server.streamFile(file1, "text/html");
-    debugln("html file sent");
-  }
-}
+  server.on("/changedetails.html", []() {
+    send_file("changedetails.html", "text/html");
+  });
 
-void sendcss() {
-  File file1 = LittleFS.open("/style.css", "r");
-  if (!file1) {
-    debugln("Failed to open file1 for reading");
+  server.on("/", []() {
+    send_file("/index.html", "text/html");
+  });
 
-  } else {
-    server.streamFile(file1, "text/css");
-    debugln(" css file sent");
-  }
-}
-
-void sendJS() {
-  File file1 = LittleFS.open("/index.js", "r");
-  if (!file1) {
-    debugln("Failed to open file1 for reading");
-
-  } else {
-    server.streamFile(file1, "application/javascript");
-    debugln(" index.js file sent");
-  }
-}
+  // CSS file
+  server.on("/style.css", []() {
+    send_file("/style.css", "text/css");
+  });
 
 
-void send_hymns() {
-  File file1 = LittleFS.open("/hymns.json", "r");
-  if (!file1) {
-    debugln("Failed to open file1 for reading");
+  server.on("/index.js", []() {
+    send_file("/index.js", "application/javascript");
+  });
 
-  } else {
-    server.streamFile(file1, "application/json");
-    debugln(" hymn.json file sent");
-  }
-}
+  server.on("/hymns.json", []() {
+    send_file("/hymns.json", "application/json");
+  });
 
-void send_listJS() {
-  File file1 = LittleFS.open("/list.min.js", "r");
-  if (!file1) {
-    debugln("Failed to open file1 for reading");
+  server.on("/pius.png", []() {
+    send_file("/pius.png", "img/png");
+  });
 
-  } else {
-    server.streamFile(file1, "application/javascript");
-    debugln(" list.js file sent");
-  }
-}
+  server.on("/list.min.js", []() {
+    send_file("/list.min.js", "application/javascript");
+  });
+  server.on("/inputs.html", []() {
+    send_file("/inputs.html", "text/html");
+  });
+  server.on("/pius.ico", []() {
+    send_file("/pius.ico", "img/ico");
+  });
 
-void send_logo() {
-  File file1 = LittleFS.open("/pius.png", "r");
-  if (!file1) {
-    debugln("Failed to open pius.png for reading");
-
-  } else {
-    server.streamFile(file1, "image/png");
-    debugln(" pius.png file sent");
-  }
-}
-
-void input() {
-  // gets input from input.html page
-  String response = server.arg("plain");
-  debug("input_response: ");
-  debugln(response);
-  if (response == "entrance") {
-    debugln("playing entrance hymn");
-  }
-
-  if (response == "offertory") {
-    debugln("playing offertory hymn");
-  }
-
-  if (response == "communion") {
-    debugln("playing communion hymn");
-  }
-
-  if (response == "closing") {
-    debugln("playing closing hymn");
-  }
-
-  if (response == "our father latin") {
-    debugln("playing cour father in latin");
-  }
-
-  if (response == "our father english") {
-    debugln("playing our father in english");
-  }
-  if (response == "creed english") {
-    debugln("playing the creed in english");
-  }
-  if (response == "creed latin") {
-    debugln("playing the creed in latin");
-  }
-
-  if (response == "gloria english") {
-    debugln("playing Gloria in english");
-  }
-  if (response == "gloria latin") {
-    debugln("playing Gloria in latin");
-  }
-  int NotBusy = 0; // this represents the busy pin of the dfmini
-  if (response == "play-pause") {
-    if (NotBusy) {
-      debugln("resume music");
+  server.on("/input", []() {
+    // gets input from input.html page
+    String response = server.arg("plain");
+    debug("input_response: ");
+    debugln(response);
+    if (response == "entrance") {
+      debugln("playing entrance hymn");
+      dfmp3.playMp3FolderTrack(atoi(hymns[response]));
     }
 
-    else {
-      debugln("pause music");
+    if (response == "offertory") {
+      debugln("playing offertory hymn");
+      dfmp3.playMp3FolderTrack(atoi(hymns[response]));
     }
-  }
-}  
-  void get_data() {
+
+    if (response == "communion") {
+      debugln("playing communion hymn");
+      dfmp3.playMp3FolderTrack(atoi(hymns[response]));
+    }
+
+    if (response == "closing") {
+      debugln("playing closing hymn");
+      dfmp3.playMp3FolderTrack(atoi(hymns[response]));
+    }
+
+    if (response == "our father latin") {
+      debugln("playing cour father in latin");
+    }
+
+    if (response == "our father english") {
+      debugln("playing our father in english");
+      //dfmp3.playMp3FolderTrack(hymn number);
+    }
+    if (response == "creed english") {
+      debugln("playing the creed in english");
+      //dfmp3.playMp3FolderTrack(hymn number);
+    }
+    if (response == "creed latin") {
+      debugln("playing the creed in latin");
+      //dfmp3.playMp3FolderTrack(hymn number);
+    }
+
+    if (response == "gloria english") {
+      debugln("playing Gloria in english");
+      //dfmp3.playMp3FolderTrack(hymn number);
+    }
+    if (response == "gloria latin") {
+      debugln("playing Gloria in latin");
+      //dfmp3.playMp3FolderTrack(hymn number);
+    }
+    bool NotBusy = digitalRead(BUSY_PIN);  // this represents the busy pin of the dfmini
+    if (response == "play-pause") {
+      if (NotBusy) {
+
+        dfmp3.start();
+        debugln("music resumed");
+      }
+
+      else {
+        dfmp3.pause();
+        debugln("music paused");
+      }
+    }
+  });
+
+  server.on("/hymns", []() {
     hymns["entrance"] = server.arg("entrance");
     hymns["offertory"] = server.arg("offertory");
     hymns["communion"] = server.arg("communion");
@@ -221,79 +252,55 @@ void input() {
       debugln("Write failed");
     }
     file.close();
+  });
+}
+
+
+
+void send_file(const char* filename, String content_type) {
+  File file1 = LittleFS.open(filename, "r");
+  if (!file1) {
+    char buffer[100];
+    sprintf(buffer, "failed to open %s for reading", filename);
+    debugln(buffer);
+
+  } else {
+    server.streamFile(file1, content_type);
+    char buffer[100];
+    sprintf(buffer, "%s file sent", filename);
+    debugln(buffer);
+  }
+}
+
+
+
+void setup() {
+  delay(1000);
+  Serial.begin(115200);
+  dfmp3.begin();
+  pinMode(BUSY_PIN, INPUT);
+  // dfmp3.setVolume(24); // make this variable
+  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+
+  // mount LITTLEFS
+  if (!LittleFS.begin()) {
+    debugln("LittleFS mount failed");
     return;
   }
 
-  void send_inputs_page() {
-    File file1 = LittleFS.open("/inputs.html", "r");
-    if (!file1) {
-      debugln("Failed to open inputs.html for reading");
+  String path = "/hymn_numbers.json";
+  String hymn_numbers = "";
 
-    } else {
-      server.streamFile(file1, "text/html");
-      debugln("inputs.html file sent");
-    }
-  }
+  debug("reading file ");
+  debugln(path);
 
-  void setup() {
-    delay(1000);
-    Serial.begin(115200);
-    WiFi.mode(WIFI_AP);
-    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP(ssid, password);
+  File file = LittleFS.open(path, "r");
+  if (!file) {
+    debugln("Failed to open file for reading");
+    debugln("this is probally first usage, so the file does not exist");
 
-    // modify TTL associated  with the domain name (in seconds)
-    // default is 60 seconds
-    dnsServer.setTTL(300);
-    // set which return code will be used for all other domains (e.g. sending
-    // ServerFailure instead of NonExistentDomain will reduce number of queries
-    // sent by clients)
-    // default is DNSReplyCode::NonExistentDomain
-    dnsServer.setErrorReplyCode(DNSReplyCode::ServerFailure);
-
-    // start DNS server for a specific domain name
-    dnsServer.start(DNS_PORT, "www.ehymn.com", apIP);
-    debugln();
-    debug("Configuring access point...");
-    /* You can remove the password parameter if you want the AP to be open. */
-
-
-    IPAddress myIP = WiFi.softAPIP();
-    debug("AP IP address: ");
-    debugln(myIP);
-    server.on("/", send_html);
-    server.on("/style.css", sendcss);
-    server.on("/index.js", sendJS);
-    server.on("/list.min.js", send_listJS);
-    server.on("/hymns.json", send_hymns);
-    server.on("/pius.png", send_logo);
-    server.on("/hymns", get_data);  // get the hymn numbers inputed in the webpage
-    server.on("/input", input);
-    server.on("/inputs.html", send_inputs_page);
-
-
-    // mount LITTLEFS
-    if (!LittleFS.begin()) {
-      debugln("LittleFS mount failed");
-      return;
-    }
-
-    server.begin();
-    debugln("HTTP server started");
-
-    String path = "/hymn_numbers.json";
-    String hymn_numbers = "";
-
-    debug("reading file ");
-    debugln(path);
-
-    File file = LittleFS.open(path, "r");
-    if (!file) {
-      debugln("Failed to open file for reading");
-      debugln("this is probally first usage, so the file does not exist");
-      return;
-    }
-
+  } else {
     debug("Read from file: ");
     while (file.available()) {
       hymn_numbers += file.readString();
@@ -302,9 +309,38 @@ void input() {
     deserializeJson(hymns, hymn_numbers);  // convert the string to json object
     file.close();
   }
+  ssid = (hymns.containsKey("ssid")) ? obj["ssid"].as<String>() + "E-hymn" : "E-hymn";
+  password = (hymns.containsKey("pass")) ? obj["pass"].as<String>() : "12345678";
+  debugln(ssid);
+  debugln(password);
+  WiFi.softAP(ssid, password);
 
-  void loop() {
-    dnsServer.processNextRequest();
+  // modify TTL associated  with the domain name (in seconds)
+  // default is 60 seconds
+  dnsServer.setTTL(300);
+  // set which return code will be used for all other domains (e.g. sending
+  // ServerFailure instead of NonExistentDomain will reduce number of queries
+  // sent by clients)
+  // default is DNSReplyCode::NonExistentDomain
+  dnsServer.setErrorReplyCode(DNSReplyCode::ServerFailure);
 
-    server.handleClient();
-  }
+  // start DNS server for a specific domain name
+  dnsServer.start(DNS_PORT, "www.ehymn.com", apIP);
+  debugln();
+  debug("Configuring access point...");
+
+
+
+  IPAddress myIP = WiFi.softAPIP();
+  debug("AP IP address: ");
+  debugln(myIP);
+  server_handles();
+  server.begin();
+  debugln("HTTP server started");
+}
+
+void loop() {
+  dnsServer.processNextRequest();
+
+  server.handleClient();
+}
