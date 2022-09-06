@@ -331,18 +331,26 @@ main{
 <div class="play-pause-container">
     <div class="play-pause">
         <button onclick="PlayHymn('play-pause')">Play/Pause</button>
+        <label for="volume">volume</label>
+    <input name="volume" type="range" id="volume" max="34" onchange="PlayHymn(this.value)"><span id="vol"></span>
     </div>
 </div>
 </main>
 
 <script>
-    var xhttp = new XMLHttpRequest();
+var xhttp = new XMLHttpRequest();
+
+//document.querySelector("#vol").innerHTML=range;
 function PlayHymn(hymn){
+var volume = document.getElementById("volume").value;
 xhttp.open("POST","input", true);
 xhttp.setRequestHeader("Content-type", "text/plain");
 xhttp.send(hymn);
+console.log(hymn);
 console.log("request successful");
+document.querySelector("#vol").innerHTML=volume;
 }
+
 
 
 

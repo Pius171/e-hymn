@@ -47,7 +47,7 @@
 #include <DFMiniMp3.h>
 
 
-DynamicJsonDocument hymns(200);
+DynamicJsonDocument hymns(1024);
 JsonObject obj = hymns.as<JsonObject>();
 // forward declare the notify class, just the name
 // I am not using the notify class, but it part of the DFMiniMp3 template
@@ -211,6 +211,12 @@ void server_handles() {
       debugln("playing Gloria in latin");
       //dfmp3.playMp3FolderTrack(hymn number);
     }
+      int volume = atoi(response.c_str());
+    if(volume!=0)// atoi returns 0 if string is not a number
+    // so if it is a number then it must be the volume
+    {
+       dfmp3.setVolume(volume);      
+    }
     bool NotBusy = digitalRead(BUSY_PIN);  // this represents the busy pin of the dfmini
     if (response == "play-pause") {
       if (NotBusy) {
@@ -236,22 +242,21 @@ void server_handles() {
     String output;
     serializeJson(hymns, output);
     debug(output);
+    save("/hymn_numbers.json",output);
 
-    String path = "/hymn_numbers.json";
+  });
 
-    Serial.printf("Writing file: %s\n", path);
+server.on("/details", []() {
+   hymns["ssid"]=server.arg("ssid");
+    hymns["pass"] = server.arg("new-pass");
+    char buffer[100];
+    sprintf(buffer, "new password is %s", password.c_str());
 
-    File file = LittleFS.open(path, "w");
-    if (!file) {
-      debugln("Failed to open file for writing");
-      return;
-    }
-    if (file.print(output)) {
-      debugln("File written");
-    } else {
-      debugln("Write failed");
-    }
-    file.close();
+        String output;
+    serializeJson(hymns, output);
+    debug(output);
+    save("/hymn_numbers.json",output);
+    ESP.restart();
   });
 }
 
@@ -272,6 +277,31 @@ void send_file(const char* filename, String content_type) {
   }
 }
 
+void save(const char* filename, String message){
+      String path = filename;
+
+    Serial.printf("Writing file: %s\n", path);
+
+    File file = LittleFS.open(path, "w");
+    if (!file) {
+      char buffer[100];
+      sprintf(buffer,"failed to open %s for writing",filename);
+      debugln(buffer);
+      return;
+    }
+    if (file.print(message)) {
+      char buffer[100];
+      sprintf(buffer,"%s written",filename);
+      debugln(buffer);
+      
+    } else {
+      char buffer[100];
+      sprintf(buffer,"%s write failed",filename);
+      debugln(buffer);
+    }
+    file.close();
+}
+
 
 
 void setup() {
@@ -279,7 +309,7 @@ void setup() {
   Serial.begin(115200);
   dfmp3.begin();
   pinMode(BUSY_PIN, INPUT);
-  // dfmp3.setVolume(24); // make this variable
+
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
 
@@ -309,8 +339,10 @@ void setup() {
     deserializeJson(hymns, hymn_numbers);  // convert the string to json object
     file.close();
   }
-  ssid = (hymns.containsKey("ssid")) ? obj["ssid"].as<String>() + "E-hymn" : "E-hymn";
-  password = (hymns.containsKey("pass")) ? obj["pass"].as<String>() : "12345678";
+
+  ssid = (hymns.containsKey("ssid")) ? hymns["ssid"] + "_E-hymn" : "E-hymn";
+  password = (hymns.containsKey("pass")) ? hymns["pass"]+"" : "12345678";
+  
   debugln(ssid);
   debugln(password);
   WiFi.softAP(ssid, password);
