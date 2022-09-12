@@ -47,7 +47,7 @@
 #include <DFMiniMp3.h>
 
 
-DynamicJsonDocument hymns(1024);
+DynamicJsonDocument hymns(200);
 JsonObject obj = hymns.as<JsonObject>();
 // forward declare the notify class, just the name
 // I am not using the notify class, but it part of the DFMiniMp3 template
@@ -188,11 +188,12 @@ void server_handles() {
 
     if (response == "our father latin") {
       debugln("playing cour father in latin");
+      dfmp3.playMp3FolderTrack(500);
     }
 
     if (response == "our father english") {
       debugln("playing our father in english");
-      //dfmp3.playMp3FolderTrack(hymn number);
+      dfmp3.playMp3FolderTrack(501);
     }
     if (response == "creed english") {
       debugln("playing the creed in english");
@@ -200,16 +201,16 @@ void server_handles() {
     }
     if (response == "creed latin") {
       debugln("playing the creed in latin");
-      //dfmp3.playMp3FolderTrack(hymn number);
+      dfmp3.playMp3FolderTrack(502);
     }
 
     if (response == "gloria english") {
       debugln("playing Gloria in english");
-      //dfmp3.playMp3FolderTrack(hymn number);
+      dfmp3.playMp3FolderTrack(504);
     }
     if (response == "gloria latin") {
       debugln("playing Gloria in latin");
-      //dfmp3.playMp3FolderTrack(hymn number);
+      dfmp3.playMp3FolderTrack(503);
     }
       int volume = atoi(response.c_str());
     if(volume!=0)// atoi returns 0 if string is not a number
@@ -243,6 +244,7 @@ void server_handles() {
     serializeJson(hymns, output);
     debug(output);
     save("/hymn_numbers.json",output);
+     send_file("/inputs.html", "text/html");
 
   });
 
@@ -256,6 +258,7 @@ server.on("/details", []() {
     serializeJson(hymns, output);
     debug(output);
     save("/hymn_numbers.json",output);
+ send_file("/inputs.html", "text/html");    
     ESP.restart();
   });
 }

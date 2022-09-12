@@ -3,3 +3,43 @@
 67 A
 
 125 A B C
+
+our father =501
+pater noster=500
+credo = 502
+gloria latin = 503
+gkoria = 504
+Angus dei = 505
+Sanctus (holy holy holy latin)=506
+Attende domine  Hear Us, O Lord, Have Mercy upon Us=507
+Because the Lord is My Shepherd=508
+Behold among men=509
+Bring them to the Lord=510
+Eat this bread=511
+Ee Mfumue: 512
+I heard the voice of Jesus say:513
+In the Lord I'll ve Ever Thankful:514
+Jesus Thou art Worthy:515
+
+K'anyi Jee N'ulo Chukwu:516
+  'Kele Chineke
+   Kyrie.mp3
+  'Lead us Heavenly Father.mp3'
+  'lord have mercy (jesus born of a woman).mp3'
+  'Mungode Allah   Jude Nnam.mp3'
+  'Obi naso m Offertory.mp3'
+  'O come Emmanuel.mp3'
+  "Ojima Ch'eyi Ojo   Missa Ejumomi   Jude Nnam.mp3"
+  'Omnipotent reigneth.mp3'
+  'Otito Diri Chineke   Missa Ifunanya   Jude Nnam.mp3'
+  'Regina Caeli.mp3'
+  'Surrender your heart to Jesus.mp3'
+  'You Are My All in All:529
+
+
+
+
+
+add preview of song
+paytack api
+update json creator to automatically add numbers

@@ -12,7 +12,7 @@ var options = {
   function hello(paran) {
     let hymnLength = Object.keys(paran).length;
     for(const key in paran) {
-        console.log(key + "" + paran[key])
+        
         userList.add({
             name: key,
             number: paran[key]
@@ -34,11 +34,18 @@ var options = {
         hello(hymns);
     }
   })
+ 
+async function redirect(e){
+  console.log(e.target);
+  e.preventDefault();
 
-  // let search_input = document.querySelector(".search");
+  let allData = new FormData(e.target)
+  // const stat = await fetch("")
+
+  console.log(allData)
+}
  
-  // search_input.addEventListener("keydown", function(){
-  //   document.querySelector(".list").classList.remove("inactive")
-  // })
- 
+const hymnSelect = document.querySelector("#hymnlist");
+hymnSelect.addEventListener("submit", redirect)
+
     
