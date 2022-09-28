@@ -45,6 +45,7 @@
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <DFMiniMp3.h>
+#include <ElegantOTA.h>
 
 
 DynamicJsonDocument hymns(200);
@@ -96,7 +97,7 @@ public:
 
 #define DEBUG 1
 
-#if DEBUG == 1
+#if DEBUG == 0
 #define debug(x) Serial.print(x)
 #define debugln(x) Serial.println(x)
 
@@ -156,9 +157,6 @@ void server_handles() {
   });
   server.on("/inputs.html", []() {
     send_file("/inputs.html", "text/html");
-  });
-  server.on("/pius.ico", []() {
-    send_file("/pius.ico", "img/ico");
   });
 
   server.on("/input", []() {
@@ -370,6 +368,7 @@ void setup() {
   debug("AP IP address: ");
   debugln(myIP);
   server_handles();
+  ElegantOTA.begin(&server);    // Start ElegantOTA
   server.begin();
   debugln("HTTP server started");
 }
